@@ -9,7 +9,56 @@
   (message "Installing use-package...")
   (unless package-archive-contents (package-refresh-contents))
   (package-install 'use-package))
-(eval-when-compile (require 'use-package))
+(require 'use-package)
+
+;; Enable global font lock mode
+(global-font-lock-mode t)
+
+;; Install and load a theme
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-one t))
+
+;; Enable rainbow-mode for color codes
+(use-package rainbow-mode
+  :ensure t
+  :hook (css-mode . rainbow-mode)
+  :hook (html-mode . rainbow-mode))
+
+;; Enable highlight-indent-guides for indentation colors
+(use-package highlight-indent-guides
+  :ensure t
+  :hook (prog-mode . highlight-indent-guides-mode)
+  :custom
+  (highlight-indent-guides-method 'character))
+
+;; Enable lsp-mode for advanced highlighting (excluding emacs-lisp-mode)
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook ((python-mode . lsp-deferred)
+         (js-mode . lsp-deferred)
+         (typescript-mode . lsp-deferred)
+         (go-mode . lsp-deferred)
+         (rust-mode . lsp-deferred)
+         (c-mode . lsp-deferred)
+         (c++-mode . lsp-deferred)
+         (web-mode . lsp-deferred))
+  :custom
+  ;; Define language IDs for specific modes (exclude emacs-lisp-mode)
+  (lsp-language-id-configuration
+   '((python-mode . "python")
+     (js-mode . "javascript")
+     (typescript-mode . "typescript")
+     (go-mode . "go")
+     (rust-mode . "rust")
+     (c-mode . "c")
+     (c++-mode . "cpp")
+     (web-mode . "html"))))
+
+;; Suppress compiler warnings for docstrings
+(setq byte-compile-warnings '(not docstrings))
 
 ;; Enable native compilation for faster startup
 (setq package-native-compile t)
@@ -27,6 +76,14 @@
 
 ;; Enable electric pair mode for automatic bracket pairing
 (electric-pair-mode 1)
+
+;; Enable line numbering globally
+(global-display-line-numbers-mode)
+
+;; Optional: Customize line number appearance
+(custom-set-faces
+ '(line-number ((t (:foreground "gray40"))))
+ '(line-number-current-line ((t (:foreground "white" :weight bold)))))
 
 ;; Ensure company-mode is installed and loaded
 (use-package company
@@ -61,4 +118,28 @@
 (setq create-lockfiles nil)           ;; Disable lock files (e.g., .#file)
 (setq make-backup-files nil)          ;; Disable backup files (e.g., file~)
 
+;; Suppress warnings about docstring quoting
+(advice-add 'byte-compile-warn-about-docstrings :override #'ignore)
+
+;; Optionally, disable line numbers in specific modes (e.g., org-mode)
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode -1))))
+
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(lsp-mode highlight-indent-guides rainbow-mode doom-themes yasnippet company)))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
